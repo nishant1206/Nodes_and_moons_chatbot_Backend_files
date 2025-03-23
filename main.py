@@ -54,7 +54,3 @@ async def predict(request: Request):
 
     generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
     return {"generated_text": generated_text}
-
-if __name__ == "__main__":
-    HOST = os.getenv("HOST", "0.0.0.0")  # Default: 0.0.0.0
-    PORT = int(os.getenv("PORT", "8000"))  # Default: 8000, ensures no error if PORT is missing
