@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, GPT2Tokenizer
@@ -15,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Load the model and tokenizer from Hugging Face Hub
 model_path = "nishant-prateek/yogananda-finetuned"
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token  # Setting pad token explicitly
@@ -55,4 +56,6 @@ async def predict(request: Request):
     return {"generated_text": generated_text}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    HOST = os.getenv("HOST", "0.0.0.0")  # Default: 0.0.0.0
+    PORT = int(os.getenv("PORT", 8000))  # Default: 8000
+    uvicorn.run(app, host=HOST, port=PORT)
