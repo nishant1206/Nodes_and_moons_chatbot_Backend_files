@@ -58,6 +58,3 @@ async def predict(request: Request):
 if __name__ == "__main__":
     HOST = os.getenv("HOST", "0.0.0.0")  # Default: 0.0.0.0
     PORT = int(os.getenv("PORT", "8000"))  # Default: 8000, ensures no error if PORT is missing
-
-    print(f"🚀 Starting FastAPI on {HOST}:{PORT}")  # Debugging print statement
-    uvicorn.run(app, host=HOST, port=PORT)
