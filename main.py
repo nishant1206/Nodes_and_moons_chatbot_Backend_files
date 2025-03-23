@@ -30,16 +30,20 @@ def home():
 
 @app.post("/predict")
 async def predict(request: Request):
-    input_ids = tokenizer.encode(request.prompt, return_tensors="pt")
+    input_ids = tokenizer.encode(request.prompt, return_tensors="pt", padding=True, truncation=True)
+    attention_mask = torch.ones_like(input_ids)
     if torch.cuda.is_available():
         input_ids = input_ids.to("cuda")
+        attention_mask = attention_mask.to("cuda")
     output_ids = model.generate(
         input_ids,
+        attention_mask=attention_mask,
         max_length=200,
         do_sample=True,
         top_k=50,
         top_p=0.95,
-        temperature=0.9
+        temperature=0.9,
+        pad_token_id=tokenizer.eos_token_id
     )
     generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
     return {"generated_text": generated_text}
