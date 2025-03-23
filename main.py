@@ -2,7 +2,7 @@ import os
 import torch
 from fastapi import FastAPI
 from pydantic import BaseModel
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, GPT2Tokenizer
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -16,12 +16,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load the model and tokenizer from Hugging Face Hub
-model_path = "nishant-prateek/yogananda-finetuned"
-tokenizer = AutoTokenizer.from_pretrained(model_path)
-model = AutoModelForCausalLM.from_pretrained(model_path)
+MODEL_PATH = "nishant-prateek/yogananda-finetuned"
 
-# Move model to GPU if available
+try:
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+except OSError:
+    print(f"Custom tokenizer not found! Using GPT-2 tokenizer instead.")
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
 
@@ -30,14 +34,15 @@ class Request(BaseModel):
 
 @app.post("/predict")
 async def predict(request: Request):
-    input_ids = tokenizer.encode(request.prompt, return_tensors="pt", padding="longest", truncation=True)
+    input_ids = tokenizer.encode(request.prompt, return_tensors="pt", padding=True, truncation=True)
+    attention_mask = torch.ones_like(input_ids)
 
-    # Move input to GPU if available
     input_ids = input_ids.to(device)
+    attention_mask = attention_mask.to(device)
 
-    # Generate text
     output_ids = model.generate(
         input_ids,
+        attention_mask=attention_mask,
         max_length=200,
         do_sample=True,
         top_k=50,
@@ -46,15 +51,9 @@ async def predict(request: Request):
         pad_token_id=tokenizer.eos_token_id
     )
 
-    # Decode generated text
     generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
-    # Remove input prompt from the generated output to avoid duplication
-    generated_text = generated_text[len(request.prompt):].strip()
-
     return {"generated_text": generated_text}
 
-# Get the port from the environment (default: 8000)
 PORT = int(os.environ.get("PORT", 8000))
 
 if __name__ == "__main__":
