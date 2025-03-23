@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, GPT2Tokenizer
 from fastapi.middleware.cors import CORSMiddleware
 import torch
-import uvicorn
 
 app = FastAPI()
 
@@ -40,6 +39,3 @@ async def predict(request: Request):
     )
     generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
     return {"generated_text": generated_text}
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
