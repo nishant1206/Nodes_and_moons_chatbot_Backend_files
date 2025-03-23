@@ -25,6 +25,10 @@ if torch.cuda.is_available():
 class Request(BaseModel):
     prompt: str
 
+@app.get("/")
+def home():
+    return "This is Home Page"
+
 @app.post("/predict")
 async def predict(request: Request):
     input_ids = tokenizer.encode(request.prompt, return_tensors="pt")
