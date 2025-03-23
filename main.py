@@ -7,14 +7,9 @@ import uvicorn
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    # add other origins if needed
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,4 +42,4 @@ async def predict(request: Request):
     return {"generated_text": generated_text}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
