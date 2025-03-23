@@ -25,7 +25,7 @@ class Request(BaseModel):
     prompt: str
 
 @app.get("/")
-def home("/"):
+def home():
     return "This is Home Page"
 
 @app.post("/predict")
